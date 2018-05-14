@@ -19,7 +19,7 @@ if(NOT CMAKE_VERBOSE_MAKEFILE)
 	set(CMAKE_VERBOSE_MAKEFILE false CACHE BOOL "Verbose option" FORCE)
 endif(NOT CMAKE_VERBOSE_MAKEFILE)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Winline -Wall -O0 -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Winline -Wall -g -O0")
 
 if(NOT USE_GCOV)
 	set(USE_GCOV CACHE BOOL "GCOV" FORCE)
@@ -80,13 +80,6 @@ endif()
 if(NOT EXISTS ${SOURCE_DIR})
 	message(FATAL_ERROR "Not found source path")
 endif()
-
-set(INCLUDE_DIRS ${SOURCE_DIR} ${INCLUDE_DIR})
-
-file(GLOB CXX_SOURCE_FILES "${SOURCE_DIR}/*.cpp")
-file(GLOB C_SOURCE_FILES "${SOURCE_DIR}/*.c")
-set(SOURCE_FILES ${CXX_SOURCE_FILES} ${C_SOURCE_FILES})
-set(TARGET_NAME ${PROJECT_NAME}.out)
 
 if(USE_GL)
 	find_package(OpenGL REQUIRED)
@@ -197,12 +190,12 @@ if(USE_EIGEN3)
 endif(USE_EIGEN3)
 
 if(USE_ICE)
-	find_package(Ice	REQUIRED COMPONENTS Ice IceBox Ice++11)
+	find_package(Ice REQUIRED COMPONENTS Ice++11 IceBox++11 IceSSL++11 IceGrid++11 IceDiscovery++11)
 
 	if(Ice_FOUND)
 		message(" ---- Found Ice ${Ice_INCLUDE_DIRS}")
 		include_directories(${Ice_INCLUDE_DIRS})
-		add_definitions(-DICE_CPP11_MAPPING)
+		add_definitions("-D ICE_CPP11_MAPPING")
 		
 		if(NOT ICE_DIR)
 			set(ICE_DIR ice CACHE PATH "find .ice file" FORCE)
@@ -210,15 +203,17 @@ if(USE_ICE)
 
 		if(EXISTS ${ICE_DIR})
 			file(GLOB ICE_FILES "${ICE_DIR}/*.ice")
+			set(ICE_OUTPUT_DIRECTORY ice_create_files CACHE PATH "Ice create file out-put directory" FORCE)
 			
-			if(EXISTS ${Ice_SLICE2CPP_EXECUTABLE} AND EXISTS ${ICE_FILES})
+			if(EXISTS ${Ice_SLICE2CPP_EXECUTABLE} AND EXISTS ${ICE_FILES} AND EXISTS ${ICE_OUTPUT_DIRECTORY})
 				get_filename_component(ICE_CREATE_FILENAME ${ICE_FILES} NAME_WE)
-				set(ICE_OUT ${INCLUDE_DIR}/${ICE_CREATE_FILENAME}.cpp ${INCLUDE_DIR}/${ICE_CREATE_FILENAME}.h)
-				ADD_CUSTOM_COMMAND(OUTPUT ${ICE_OUT} DEPENDS ${ICE_FILES} COMMAND "${Ice_SLICE2CPP_EXECUTABLE}" ARGS ${ICE_FILES} --output-dir ${INCLUDE_DIR})
-				#set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUT})
+				set(ICE_OUT_FILES ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.cpp ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.h)
+				add_custom_command(OUTPUT ${ICE_OUT_FILES} DEPENDS ${ICE_FILES} COMMAND "${Ice_SLICE2CPP_EXECUTABLE}" ARGS ${ICE_FILES} --output-dir ${ICE_OUTPUT_DIRECTORY})
+				set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUT_FILES})
+				set(INCLUDE_DIRS ${INCLUDE_DIRS} ${ICE_OUTPUT_DIRECTORY})
 
 			else()
-				message(FATAL_ERROR " ---- Not found ice slice")
+				message(FATAL_ERROR " ---- Not found ice slice or ice output directory")
 
 			endif()
 		else()
@@ -231,11 +226,18 @@ if(USE_ICE)
 	endif(Ice_FOUND)
 endif(USE_ICE)
 
+file(GLOB CXX_SOURCE_FILES "${SOURCE_DIR}/*.cpp")
+file(GLOB C_SOURCE_FILES "${SOURCE_DIR}/*.c")
+set(SOURCE_FILES ${SOURCE_FILES} ${CXX_SOURCE_FILES} ${C_SOURCE_FILES})
+
+set(TARGET_NAME ${PROJECT_NAME}.out)
+
+set(INCLUDE_DIRS ${INCLUDE_DIRS} ${SOURCE_DIR} ${INCLUDE_DIR})
 include_directories(${INCLUDE_DIRS})
 
 add_executable(${TARGET_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${TARGET_NAME} stdc++ pthread m)
+target_link_libraries(${TARGET_NAME} stdc++ pthread system m)
 target_link_libraries(${TARGET_NAME} python2.7)
 
 if(USE_GL)
