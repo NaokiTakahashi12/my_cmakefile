@@ -1,3 +1,10 @@
+#
+# ccmake and cmake
+#
+# Author Naoki Takahashi
+# Email s16c1077hq@s.chibakoudai.jp
+#
+
 cmake_minimum_required(VERSION 3.10)
 
 if(NOT PROJECT_NAME)
