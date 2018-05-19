@@ -11,15 +11,13 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 project(${PROJECT_NAME} CXX C)
 
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 17)
 
 if(NOT CMAKE_VERBOSE_MAKEFILE)
 	set(CMAKE_VERBOSE_MAKEFILE false CACHE BOOL "Verbose option" FORCE)
 endif(NOT CMAKE_VERBOSE_MAKEFILE)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Winline -Wall -g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Winline -Wextra -Wall -g -O0")
 
 if(NOT USE_GCOV)
 	set(USE_GCOV CACHE BOOL "GCOV" FORCE)
@@ -205,17 +203,29 @@ if(USE_ICE)
 			file(GLOB ICE_FILES "${ICE_DIR}/*.ice")
 			set(ICE_OUTPUT_DIRECTORY ice_create_files CACHE PATH "Ice create file out-put directory" FORCE)
 			
-			if(EXISTS ${Ice_SLICE2CPP_EXECUTABLE} AND EXISTS ${ICE_FILES} AND EXISTS ${ICE_OUTPUT_DIRECTORY})
-				get_filename_component(ICE_CREATE_FILENAME ${ICE_FILES} NAME_WE)
-				set(ICE_OUT_FILES ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.cpp ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.h)
-				add_custom_command(OUTPUT ${ICE_OUT_FILES} DEPENDS ${ICE_FILES} COMMAND "${Ice_SLICE2CPP_EXECUTABLE}" ARGS ${ICE_FILES} --output-dir ${ICE_OUTPUT_DIRECTORY})
-				set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUT_FILES})
-				set(INCLUDE_DIRS ${INCLUDE_DIRS} ${ICE_OUTPUT_DIRECTORY})
-
-			else()
-				message(FATAL_ERROR " ---- Not found ice slice or ice output directory")
-
+			if(NOT EXISTS ${Ice_SLICE2CPP_EXECUTABLE})
+				message(FATAL_ERROR " ---- Not found ice slice")
 			endif()
+			if(NOT DEFINED ICE_FILES)
+				message(FATAL_ERROR " ---- Not found ice files")
+			endif()
+			if(NOT EXISTS ${ICE_OUTPUT_DIRECTORY})
+				message(FATAL_ERROR " ---- Not found ice output directory")
+			endif()
+
+			foreach(ICE_FILE ${ICE_FILES})
+				get_filename_component(ICE_CREATE_FILENAME "${ICE_FILE}" NAME_WE)
+				set(ICE_OUTPUT_FILES ${ICE_OUTPUT_FILES} ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.cpp ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.h)
+			endforeach()
+
+			add_custom_command(OUTPUT ${ICE_OUTPUT_FILES} DEPENDS ${ICE_FILES} COMMAND "${Ice_SLICE2CPP_EXECUTABLE}" ARGS ${ICE_FILES} --output-dir ${ICE_OUTPUT_DIRECTORY})
+
+			foreach(ICE_OUTPUT_FILE ${ICE_OUTPUT_FILES})
+				set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUTPUT_FILE})
+			endforeach()
+
+			set(INCLUDE_DIRS ${INCLUDE_DIRS} ${ICE_OUTPUT_DIRECTORY})
+
 		else()
 			message(FATAL_ERROR " ---- Not found ice directory")
 
