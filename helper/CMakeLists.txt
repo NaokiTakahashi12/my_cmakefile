@@ -5,6 +5,8 @@
 # Email s16c1077hq@s.chibakoudai.jp
 #
 
+message("Cmake is ${CMAKE_COMMAND}")
+
 cmake_minimum_required(VERSION 3.10)
 
 if(NOT PROJECT_NAME)
@@ -25,6 +27,10 @@ if(NOT CMAKE_VERBOSE_MAKEFILE)
 endif(NOT CMAKE_VERBOSE_MAKEFILE)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Winline -Wextra -Wall -g -O0")
+
+if(NOT MAIN_FILENAME)
+	set(MAIN_FILENAME main CACHE STRING "Main file name" FORCE)
+endif(NOT MAIN_FILENAME)
 
 if(NOT USE_GCOV)
 	set(USE_GCOV CACHE BOOL "GCOV" FORCE)
@@ -66,6 +72,10 @@ if(NOT EXECUTABLE_OUTPUT_PATH)
 	set(EXECUTABLE_OUTPUT_PATH bin CACHE PATH "Out file insert directory" FORCE)
 endif()
 
+if(NOT LIBRARY_OUTPUT_PATH)
+	set(LIBRARY_OUTPUT_PATH lib CACHE PATH "Library file insert directory" FORCE)
+endif()
+
 if(NOT INCLUDE_DIR)
 	set(INCLUDE_DIR include CACHE PATH "Include directory" FORCE)
 endif()
@@ -94,7 +104,14 @@ if(USE_GL)
 		include_directories(${OpenGL_INCLUDE_DIRS})
 
 	else()
-		message(" ---- Not Found OpenGL")
+		message(FATAL_ERROR " ---- Not Found OpenGL")
+
+	endif()
+	if(APPLE)
+		set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${OpenGL_LIBRARIES} glfw "-framework OpenGL")
+
+	elseif(UNIX)
+		set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${OpenGL_LIBRARIES} glfw)
 
 	endif()
 endif(USE_GL)
@@ -116,9 +133,12 @@ if(USE_SSH)
 		file(GLOB libssh_LIBRARIES "${libssh_LIBRARIES_DIR}/libssh*.dylib")
 
 	else()
-		message(" ---- Not Found libssh Top Directories")
+		message(FATAL_ERROR " ---- Not Found libssh Top Directories")
 
 	endif()
+
+	set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${libssh_LIBRARIES})
+
 endif(USE_SSH)
 
 
@@ -136,10 +156,17 @@ if(USE_ODE)
 	if(EXISTS ${ODE_INCLUDE_DIR} AND EXISTS ${ODE_LIBRARIES_DIR})
 		message(" ---- Found Ode ${ODE_INCLUDE_DIR}")
 		include_directories(${ODE_INCLUDE_DIR})
-		file(GLOB ODE_LIBRARIES "${ODE_LIBRARIES_DIR}/*.a")
+		file(GLOB ODE_LIBRARIES "${ODE_LIBRARIES_DIR}/lib*.a")
 
 	else()
-		message(" ---- Not Found Eigen3 Top Directories")
+		message(FATAL_ERROR " ---- Not Found Ode Top Directories")
+
+	endif()
+	if(APPLE)
+		set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${ODE_LIBRARIES} "-framework AGL -framework OpenGL -framework GLUT")
+
+	elseif(UNIX)
+		set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${ODE_LIBRARIES} drawstuff GL GLU glut X11 "ode")
 
 	endif()
 endif(USE_ODE)
@@ -152,9 +179,12 @@ if(USE_CV)
 		include_directories(${OpenCV_INCLUDE_DIRS})
 
 	else(OpenCV_FOUND)
-		message(" ---- Not Found OpenCV")
+		message(FATAL_ERROR " ---- Not Found OpenCV")
 
 	endif(OpenCV_FOUND)
+
+	set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${OpenCV_LIBRARIES})
+
 endif(USE_CV)
 
 if(USE_BOOST)
@@ -165,9 +195,12 @@ if(USE_BOOST)
 		include_directories(${Boost_INCLUDE_DIRS})
 
 	else(Boost_FOUND)
-		message(" ---- Not Found Boost")
+		message(FATAL_ERROR " ---- Not Found Boost")
 
 	endif(Boost_FOUND)
+
+	set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${Boost_LIBRARIES} Boost::thread)
+
 endif(USE_BOOST)
 
 if(USE_EIGEN3)
@@ -179,7 +212,7 @@ if(USE_EIGEN3)
 			include_directories(${EIGEN3_INCLUDE_DIRS})
 
 		else(Eigen3_FOUND)
-			message(" ---- Not Found Eigen3")
+			message(FATAL_ERROR " ---- Not Found Eigen3")
 
 		endif(Eigen3_FOUND)
 	elseif(UNIX)
@@ -220,15 +253,19 @@ if(USE_ICE)
 				message(FATAL_ERROR " ---- Not found ice output directory")
 			endif()
 
+			get_filename_component(ICE_OUTPUT_DIRECTORY ${ICE_OUTPUT_DIRECTORY} ABSOLUTE)
+
 			foreach(ICE_FILE ${ICE_FILES})
-				get_filename_component(ICE_CREATE_FILENAME "${ICE_FILE}" NAME_WE)
+				get_filename_component(ICE_CREATE_FILENAME ${ICE_FILE} NAME_WE)
 				set(ICE_OUTPUT_FILES ${ICE_OUTPUT_FILES} ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.cpp ${ICE_OUTPUT_DIRECTORY}/${ICE_CREATE_FILENAME}.h)
 			endforeach()
 
 			add_custom_command(OUTPUT ${ICE_OUTPUT_FILES} DEPENDS ${ICE_FILES} COMMAND "${Ice_SLICE2CPP_EXECUTABLE}" ARGS ${ICE_FILES} --output-dir ${ICE_OUTPUT_DIRECTORY})
 
 			foreach(ICE_OUTPUT_FILE ${ICE_OUTPUT_FILES})
-				set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUTPUT_FILE})
+				if("${ICE_OUTPUT_FILE}" MATCHES ".cpp")
+					set(SOURCE_FILES ${SOURCE_FILES} ${ICE_OUTPUT_FILE})
+				endif()
 			endforeach()
 
 			set(INCLUDE_DIRS ${INCLUDE_DIRS} ${ICE_OUTPUT_DIRECTORY})
@@ -238,54 +275,48 @@ if(USE_ICE)
 
 		endif()
 	else(Ice_FOUND)
-		message(" ---- Not Found Ice")
+		message(FATAL_ERROR " ---- Not Found Ice")
 
 	endif(Ice_FOUND)
+
+	set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${Ice_LIBRARIES})
+
 endif(USE_ICE)
 
 file(GLOB CXX_SOURCE_FILES "${SOURCE_DIR}/*.cpp")
 file(GLOB C_SOURCE_FILES "${SOURCE_DIR}/*.c")
 set(SOURCE_FILES ${SOURCE_FILES} ${CXX_SOURCE_FILES} ${C_SOURCE_FILES})
 
-set(TARGET_NAME ${PROJECT_NAME}.out)
-
 set(INCLUDE_DIRS ${INCLUDE_DIRS} ${SOURCE_DIR} ${INCLUDE_DIR})
 include_directories(${INCLUDE_DIRS})
 
-add_executable(${TARGET_NAME} ${SOURCE_FILES})
+set(OUT_TARGET_NAME ${PROJECT_NAME}.out)
 
-target_link_libraries(${TARGET_NAME} stdc++ pthread system m)
-target_link_libraries(${TARGET_NAME} python2.7)
+foreach(SOURCE_FILE ${SOURCE_FILES})
+	if(NOT "${SOURCE_FILE}" MATCHES "${MAIN_FILENAME}")
+		get_filename_component(LIBRARY_FILENAME ${SOURCE_FILE} NAME_WE)
 
-if(USE_GL)
-	if(APPLE)
-		target_link_libraries(${TARGET_NAME} ${OpenGL_LIBRARIES} "-framework OpenGL -lglfw")
-	elseif(UNIX)
-		target_link_libraries(${TARGET_NAME} ${OpenGL_LIBRARIES} "-lglfw")
+		if("${SOURCE_FILE}" MATCHES ".cpp" OR "${SOURCE_FILE}" MATCHES ".c")
+			add_library(${LIBRARY_FILENAME} ${SOURCE_FILE})
+			set(LIBRARY_FILES ${LIBRARY_FILES} ${LIBRARY_FILENAME})
+
+		endif()
+	else()
+		set(MAIN_SOURCE_FILE ${SOURCE_FILE})
+
 	endif()
-endif(USE_GL)
+endforeach()
 
-if(USE_SSH)
-	target_link_libraries(${TARGET_NAME} ${libssh_LIBRARIES})
-endif(USE_SSH)
+add_executable(${OUT_TARGET_NAME} ${MAIN_SOURCE_FILE})
 
-if(USE_ODE)
-	if(APPLE)
-		target_link_libraries(${TARGET_NAME} ${ODE_LIBRARIES} "-framework AGL -framework OpenGL -framework GLUT")
-	elseif(UNIX)
-		target_link_libraries(${TARGET_NAME} ${ODE_LIBRARIES} "ode -ldrawstuff -lGL -lGLU -lglut -lX11")
-	endif()
-endif(USE_ODE)
+if(LIBRARY_FILES)
+	add_dependencies(${OUT_TARGET_NAME} ${LIBRARY_FILES})
+endif()
 
-if(USE_CV)
-	target_link_libraries(${TARGET_NAME} ${OpenCV_LIBRARIES})
-endif(USE_CV)
+set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${LIBRARY_FILES})
 
-if(USE_BOOST)
-	target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES} Boost::thread)
-endif(USE_BOOST)
+set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} stdc++ pthread m)
+set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} python2.7)
 
-if(USE_ICE)
-	target_link_libraries(${TARGET_NAME} ${Ice_LIBRARIES})
-endif(USE_ICE)
+target_link_libraries(${OUT_TARGET_NAME} ${ALL_LINK_LIBRARIES})
 
