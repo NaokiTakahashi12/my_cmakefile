@@ -100,7 +100,6 @@ endif(NOT MAIN_FILENAME)
 set(CXX_SOURCE_FILE_EXTS cpp;cxx)
 set(CXX_INCLUDE_FILE_EXTS hpp;h)
 
-Flag(FIND_SUBDIRECTORY true "Find subdirectory")
 Flag(USE_GCOV false "GCOV mode")
 Flag(CMAKE_VERBOSE_MAKEFILE false "Verbose option")
 
@@ -382,8 +381,14 @@ if(USE_EIGEN3)
 			set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} $ENV{EIGEN3_INCLUDE_DIR})
 
 		else()
-			message(" ---- Not Defind of EIGEN3_INCLUDE_DIRS")
+			find_package(Eigen3 REQUIRED)
+			if(Eigen3_FOUND)
+				message(" ---- Found Eigen3 ${EIGEN3_INCLUDE_DIR}")
+				set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${EIGEN3_INCLUDE_DIR})
 
+			else()
+				message(" ---- Not Defind EIGEN3_INCLUDE_DIRS")
+			endif(Eigen3_FOUND)
 		endif()
 	endif()
 endif(USE_EIGEN3)
@@ -511,14 +516,12 @@ set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${CXX_INCLUDE_DIRECTORIES})
 
 include_directories(${INCLUDE_DIRECTORIES})
 
-set(OUT_TARGET_NAME ${PROJECT_NAME}.out)
-
 foreach(SOURCE_FILE ${SOURCE_FILES})
 	if(NOT "${SOURCE_FILE}" MATCHES "${MAIN_FILENAME}")
 		get_filename_component(LIBRARY_FILENAME ${SOURCE_FILE} NAME_WE)
 
 		if("${SOURCE_FILE}" MATCHES ".cpp" OR "${SOURCE_FILE}" MATCHES ".c")
-			add_library(${LIBRARY_FILENAME} STATIC ${SOURCE_FILE})
+			set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${SOURCE_FILE})
 			set(LIBRARY_FILES ${LIBRARY_FILES} ${LIBRARY_FILENAME})
 
 		endif()
@@ -528,19 +531,24 @@ foreach(SOURCE_FILE ${SOURCE_FILES})
 	endif()
 endforeach(SOURCE_FILE)
 
+if(LIBRARY_SOURCE_FILES)
+	set(PROJECT_LIBRARY ${PROJECT_NAME})
+	add_library(${PROJECT_LIBRARY} ${LIBRARY_SOURCE_FILES})
+endif()
+
+set(OUT_TARGET_NAME ${PROJECT_NAME}.out)
+
 add_executable(${OUT_TARGET_NAME} ${MAIN_SOURCE_FILE})
 
-if(LIBRARY_FILES)
-	add_dependencies(${OUT_TARGET_NAME} ${LIBRARY_FILES})
+if(LIBRARY_SOURCE_FILES)
+	add_dependencies(${OUT_TARGET_NAME} ${PROJECT_LIBRARY})
 endif()
 
 if(CHILD_PROJECT)
 	set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${MATHER_PROJECT_LIBRARY_FILES})
 endif(CHILD_PROJECT)
 
-set(ALL_LINK_LIBRARIES ${ALL_LINK_LIBRARIES} ${LIBRARY_FILES})
-
-target_link_libraries(${OUT_TARGET_NAME} ${ALL_LINK_LIBRARIES})
+target_link_libraries(${OUT_TARGET_NAME} ${ALL_LINK_LIBRARIES} ${PROJECT_LIBRARY})
 
 message(" ----------------------------------------------------- ")
 
