@@ -7,22 +7,6 @@
 
 message(" ----------------------------------------------------- ")
 message("Cmake is ${CMAKE_COMMAND}")
-message("
-               .
-              ,M,
-             ,kHW,
-            ,kkHfW,
-           ,kkkHWfW,
-          .kkkkHHffW,  `         `  `  `    `  `  `  `  `  `  `      `         ....
-       ` .kkkkkkNVffW,    `  `      .gH@@@HMm` .@@@@b      d@@@@               d@M
-    `   .kkkkbkkNVfffW,           (@@#!``_?    d@MH@N    .d@#@@#              .@@F
-       .kkkkbkHY4VVVffW,         d@@%         .@@FJ@@.  .d@P,@@%  .dH@@HMa.   J@@! .d@M  .(H@@@N&
-      .kkkkbH9~~JVVVVVfW,       .@@F          J@@:,@@; .H@F H@M`  .!   .H@b  .@@@.d@M=   (@M=  .M@b
-     .kkkHHD~~~~(HfVVVfVW,      ,@@]         .@@@ .@@].H@F .@@F   .JgQQQH@F  .@@M@@=    ,@@mggggH@#
-    .kkHHSzzXUGJ-NVVVVVVfW.  `  .@@M,        .@@   @@h@@t  d@@! .@@Y!  .@@:  d@#.H@h.   d@M???????
-   .kHHXzzzzzzzzzXWHWkfVVVW.     (M@@h-...p  W@#   W@@@%  .@@@  (@@&...M@#  .@@% .M@N.  ,@@h....._
-  .H8zzzzzuzzuzzzzzzzzXWHWWW.      ?WHHWY   .YYt   ?YYC   ?YY^   ?YHYYTY%  ?YY`  .YY5    7YWHWY
- .")
 
 cmake_minimum_required(VERSION 3.10)
 
@@ -123,10 +107,10 @@ if(USE_GCOV)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
 endif(USE_GCOV)
 
-Path(EXECUTABLE_OUTPUT_PATH binary "Out file output directory")
-Path(LIBRARY_OUTPUT_PATH libraries "Library file output directory")
-Path(INCLUDE_DIRECTORY include "Include directory")
-Path(SOURCE_DIRECTORY scripts "Source directory")
+Path(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/binary "Out file output directory")
+Path(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libraries "Library file output directory")
+Path(INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include "Include directory")
+Path(SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts "Source directory")
 
 if(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH})
 	message("Not found executable path")
@@ -217,28 +201,6 @@ endif(USE_SSH)
 
 
 if(USE_ODE)
-	message("
-	(z1,       .xz<        (O1.       .v<-       .Jvi.      `.z<-       .Jv+.       (Oz-       .zOi.      .Jz<-.     ..zz_.      .&O+-.     .JzOi.
-      .I<(k       z><d.      .Sz?}       dI_j.      -K>_>      .qk<_:     .WHZ(<.     dqRz<i     (HHXz1-    .HHHI_(.   .WHWkx_<   .dHHHA+(_   JHHytv!
-      (I<(y       O<>z_      .0z<l       fI_<:      XH>~+.     dHk<~<     (HWk<<>    .kWWI<(-   .kkWSI1+.  .bHWYS>_<  .XHWf(k-_< .dWff`jw<~_ dWWK'
-      (z>(X`      j<<j`      .kl<z      .bI~(>     .WHI_(:``  .WkW>_(_ `  XkWWz;<.`` XkHt6<<1   dkHP.kz?l  dWHf ,I_.: JXHK  (o.(-JXWK`  jc_(JXXW!
-      (z<<X      `(<1z.     `,kz=z      ,U0~(z     .VCk_(iJ@e .MNXI<(l .MHHH@NI(?v+++<1W@H>:+I<+11?W@KI+zI1111zM@K< 1z1111vM@R_ jz1v\   .I__zZw\   `
-.......z~(I.......J>~1-......Jkz~z-.....(kw_ 1....HMMMK<.dMHHaMHMNy< d&MMHMHMMk_(1<<~~~?MMI_(z:<:<:?MNZ<(I~:::<?MNc (>:::::J@Nl (>:<1-(JJs> (vO((((((-
-(><dH@MZ>.z<<<<d@HMI_(I<<<<d@HNZ:(I<<<<d@@N>.(v<<dHWMM#c.+HX@MMKMMN+.(WMKHMRd@Hc.<_..`..d@R<.1-` `` d@Rz.1__    dMk_ +_````_WMk_ z__+~~H@Mk_.z~~~~~~~~
-(++J@@HRz(z(::_J@@Mk+(I(((_Jg@Mko+I____Jg@MI-+I__JHXMMNk-jXX@WMRMMNZ<(dMRHMRd@Nk+z>_____J@HI+z:_____JHHk+w<--.._J@Kl.z--....J@Kl(z-(j--J@@k+(z-----__-
-jwwd@HHKwIzOzzzdH@HKlwwzzzzdq@@HuXwzzzzdqH@R?zOzzdHWMMMkzzdWMM#NMMMkOzdMHMHHdHMktOI+++zzdHNIzrI++++1d@NwzuI<<<+1dHNI>Oc<<<++d@HI+zz+dwwdMgRv=zwzzzzzzc
-?77777HHZwlC?????HHHIOwC7???WHHHOXzr7?7WWHP1<zv777MMMMM#vzuM#MNMMMMKzldM@MMHW@@RlvwOOwwwd@M0+zXOOwwwd@MIwuXzzzwwd@MI<Owzzzwwd@NI+zwwXWBBBWHz=zVUU9UUU$
-     .VWkzOO.   .VWb0zwk.  .yVk>XvzI  .Wyb:.I=wl .WyW{ .OzwWBWMMM'.NOlwH#MHHH@HHOwvWWWHHH@HKzwXWkWHHH@@RvuXkkWkkH@MkzzXkkWkkWHMX1zXK'     XOzz)
-    .Z<zYXOzo  .k>jr.ytwl  dSjf (Xvw< JXXV  jOzw.JXWK   Ozwk(WWK`   XZzXWWK` ``(XwrXWW!````(kOwWW:`````jXzXW{``````OIzX\```````WOzI       WXzz[
-   .XXx2 (ZXwn.dZXZ` jwXX+JUXK`  4XXk(UXW!  .XuukIOW\   .kZX0zX%    (XuX+vP     wZXZvD      SXWSS      ,WVWW`      jkXX:       WXX0       XXwX[
-  (WggY   ?UuXZXW@`   jXXVWX#'    4uXXXU\ `  (XwWXXf     jXXWZf      4uXWk`     ,UZWW{      jXXpr       UXWR       (XXp~       WzXP       d0uX
-   ?7!      ?7T7^      .7TY=       ?TT7`      .?TY^      `?7Y=        ?TY!  `    (7Y^      ` ?T=        (7Y^        7T=       `?7Y'       .7T=  `  `
-  .....,                              .......                       `          `                       ........
-.dMt  ,MN,`                 `          MM]  TMN,    `           `    `              `   . `   .         MM]`_TF `` `  ` `    `     `  ` `  `      ,,HD
-jM#    JMN (M](Mm JM%`?] MMp  H!       MM]   dMN.WM/ (D`MMp  M!  JM[  .MM,  dM] (MF .dF` T].M> U_       MM% .x  ?MN, ?#!.+B!_T] vMF zMN..vF qMr?T]
-dM#   `(MN ,M].dM ,Mn.p  V,MN.d        MM]   JMN` WN.$  X(MN.d  .%dN. .FWN.((M] .M] MN`    ,MNa,        MMP`TF   F?Mp b dM`   ` ,M[ ,rWN,,] ,Mn.p
-,MN,   dMF ,M]`   ,M) !. V  WNk        MM]   dMF   M#   X  WNg .K77Mb .F MN%.M] .M] HN- ` ,.. 7Mb       MM]   (  F ,MNb MM. ?M#`,M[ ,) ?Mg] ,M} =. `
- .T9GJH`'  JMh.   JMh(J8.H.  7B     ` (MMB+zT`!   (ME, .H+  7B.?3..?Ml(E,,9 (Mh.(M5. T8J.dt,8--B'      .MMh-(dM .b, .WE .TN..M@ (ML.Jh. ,M%.(Mh.(@")
 	if(APPLE)
 		set(ODE_TOP_DIRECTORIES /usr/local/Cellar/ode-drawstuff/0.13/)
 
@@ -268,36 +230,6 @@ dM#   `(MN ,M].dM ,Mn.p  V,MN.d        MM]   JMN` WN.$  X(MN.d  .%dN. .FWN.((M] 
 endif(USE_ODE)
 
 if(USE_CV)
-	message("
-     `    `    `  `  `    `  ` ` `   `   ` ` ..&QkkA&..`    `    `    `    `    `    `    `    `
-  `   `     `      `    `     `          `.dbbbbbbbbbbbWa.     `    `    `    `    `    `    `    `
-        `                           `   .dbpbbbbbbbbbbbpbbl
-    `      `  `  `   `   `  `  ` `    `.pbpbbbbKY``4bbpbpbbh `   `   `  `   `   `   `  `   `   `
-      `                                dpbbppW^      Cbbbpbb;                                     `
-  `     `       `  `  `    `        `  bpbbpb\        Wbpbbp$      `       `   `          `   `
-     `       `           `    `  `     WbpbbpL       .ppbbpb]  `       `          `  `  `
-                  `    `               jbbpbbbh,    .bbpbpbW!    `       `   `                  `
-   `   `  `    `    `       `  `        4bbpbbY     .WpbbpW^        `                       `
-             `                   `  `    ?Wbp%       .4bbY`    `       `       `  `  `  `     `   `
-    `   `        `   `  `  `               (^     `    ``          `       `
-                              `  .(+1lz+(..                                                 `
-   `  `      `    `           .zllllllllll!     `     .JHe   `   `.dN,`  `   `    `   `   `     `
-        `       `   `  `   `.=l=l=l====lz!   `       .HHHHL      .HHHHN,       `
-                           .ll==l=lv???<`           JHHHHHHb    .MHHHHHM,
-   `  `    `             ` ll=ll=v`             `  .HHHHHHF      (MHHHHHN    `    `   `  `  `  `  `
-               `   `  `   .l==l=l~        .......  gHHHHH#        ,HHHHHH.
-       `     `    `       .l=l==l-       .l==l=l!  JHHHHHM,    `  JHHHHHM
-   `     `                 <l=ll=li.   ..l==l=lv   .MHHHHHMa,  ..dHHHHHHF    `    `  `  `   `   `
-                     `      1=l==l===l=l=l=l=lv`    ,MHHHHHHHHHHHHHHHHHF
-    `  `     `  `  `   `     ?1l=ll=l==l==llz!       .THHHHHHHHHHHHHHM=        `
-                               _<1ll=ll=lz<!            7WHHHHHHHHMY^        `    `   `   `   `   `
-             `              ......           `            ....., ..    ..,
-                    `      MM`77TMb        `      `      JM`77TM]JM|   M#             `   `   `
-         `       `        .MF    M#`MNT`Mb .M``M[ MNT`Mp`M#    `` MN. .M%         `
-     `                    .MF    M# MF  (M MNkQM@ MF  J# M#    ., ,Mb.MF
-                      `    MNJ..(MF MN..J# HN..gK MF  J# dM&...MF  dMdM`       `                `
-             `  `            ???!  `MF.?!   -??`  ?!  .!   ???!`    ??!                 `   `
-    `  `           `                HD")
 	find_package(OpenCV REQUIRED)
 
 	if(OpenCV_FOUND)
@@ -313,27 +245,6 @@ if(USE_CV)
 endif(USE_CV)
 
 if(USE_BOOST)
-	message("
-               ` ` `` `` `  `
-            ` ` ```` ```` `` `
-          ` ````````````````````` `             (+++J                                                                             .+++J,
-         ` ` ``````````````````` `` ` `        .MMMMF                                                                             -MMM#`
-        ` ```````.zll===1- .```````` ` ` `     .MMMM\                                                                             dMMMD
-        ` ```` ..ztllll=v!`...````````` `      dMMMMJ(((((-.,           ...((-...            ....((-...        ..(((((((((((, .((JMMMMa(((,
-      `  ` `` .(Orttttlv~. .......````` ` `   .MMMMMMMMMMMMMMN,     .(gMMMMMMMMMMMm,      .jMMMMMMMMMMMNa.   .MMMMMMMMMMMMMM% (MMMMMMMMMMM}
-       ` ````..(Orrrttv_- (==????>-``````  `  .MMMMY????7TMMMMN<  .jMMMMM9`??`WMMMMN[   .dMMMMM`7??TMMMMMN- .MMMM=`           ???MMMM@????
-      ` `````.._(7711>__.Jl====???>-`.````   `dMMM#`      JMMMM] .dMMMM%       ?MMMM#  .MMMM#'       HMMMMD JMMMN,......        .MMMM}
-     ` ` ```.-......._~.jtlll===????_```` `   MMMMD       .MMMM] JMMMMF        .MMMM# .MMMMM!        (MMMM$ (MMMMMMMMMMMMNe.    +MMM#`
-     ` `````._(wwwwOO+._.1tlll====?>_.```  ` .MMMM\       JMMM#! MMMMN:        (MMMMt .MMMM#        .dMMMM!   ?```````HMMMMb    dMMMF
-    ` ` ``` _(uuuuzzzvo._ 1ttlll==> .````    gMMM#`     .dMMMM\  MMMMML       .MMMMF  .MMMMM,      .dMMMM%             MMMM@   .MMMM}
-     ` ``` _JZZZuuuuzzvI-_.?<<<<<!`.``` ``  .MMMMNNNNNNMMMMM#'   (MMMMMNJ-.(&MMMMM=    TMMMMMNJ..(gMMMM#^  .(((((((((JMMMM#!   (MMMMNgJJ
-     `` `` _4ZZZZuuuuuzZ! .....`.`````      (MMMMMMMMMMMMM9^      .TMMMMMMMMMMMB=       ?WMMMMMMMMMMM9!   .MMMMMMMMMMMMMM`      7MMMMMM@
-      ````` -zZZZZZuuuZ!...````````` ` `                              _?777?`               ??777!`
-    `   ```` .jUUX0XXC~.````````` `     `
-     `   ```` ........_```````       `      J=?    ..+     .o.          .}      d!    Rz0`   .wOX\    .U|    .KOW:   .K    .kO>    .ROv`
-      `  ` ````````````````                 C+<     ?`     ,!           ?O+    .$    .ZJ=    ,>(6    ,=75    (!(t    ,t    ,S&_    .+JY
-               `` ` ` `       `
-         `  `      `   `   `")
 	find_package(Boost	REQUIRED COMPONENTS thread system)
 
 	if(Boost_FOUND)
@@ -349,33 +260,6 @@ if(USE_BOOST)
 endif(USE_BOOST)
 
 if(USE_EIGEN3)
-	message("
-	                            jma-..
-                                   (WggHkmx
-            ...                     ?HHHHgH;
-            ?WHkn-...-+&sAA&+J.....JdMMHkH@R-                `    `
-             (HMHHHgHqWkXkXXXWHHqHM#MMMMMWWqs. `  `  `  `  `    `
-   .(<        ?WMMHHHHBH@HpWWgHkbbHMMHMMHWwWHo                      `
-  jXy~         j@HpWC`  ?HHC!?THmWWMMHHMNkH@MN+         `    `
- .(dHn.   `   (HHkpk_ `(zXSz_`(dWWWHHHMMMMHHM##-  `  `    ` aaaaaaaaaaaaaaa-  .AAA   `   `   `   `   `   `   `   `   `   `   `   `   `
-  dWHmMo     .dggmHk+.(ZXHHX-.jyyWHMH?WMMNMH##MR.           pppUUUUUUUUUUUU:  ,WWW                                                      `
-  jHHHHWXx    vHgHkWWHHM0jXkHHpWWHMH0` ???TMMH9W}  `  `  `  ppp`
-   ?MHHHWHn.. (W@HHgHkkVkdHHWHHHHMMC`          (:           ppp`              .JJJ     ` .(dXWka..JJ,  `  ` ..dXWkA&,   `  (JJ, .(dXWk+,
-    ?HgHMHHHWXQWMMgHHHWUXHXXWHMMMMMma.        .c`       `   ppp`              .ppR     .pppVY``TWpppP     .ppXY`77TWpp+    dppAppUYT4Wpph
-     (WgMMMqqqqkbkbWWXrO=zOXyWpkkkqqmgH+.  `  (>`  ` `      pppWXXXXXXXXXX)   .ppR    JppY       .ppP    dpW^       jpp[   dppf^      4pp[
-       vHgggmHqkkkW00Ol=??zOwXpppfpfWHHHm-    (~         `  ppfYTTTTTTTTTT    .ppR   .ppf        .ppP   ,pp          ppW   dpp}       ,pfR
-        jHHHmgHHHHWXI=l=?<<+zXWWWHNHkWkpHHQe..z+.     `     ppp`              .ppR   dpp         .ppP   Xpppppppppppppfp   dpp}       .ppR
-       .dHH@HHWWWSXXv===?;::;vUUWHHMMMMHHWHMmdkX[   `       ppp`              .ppR   dpp)        .ppP   Wpp:````````````   dpp}       .fpR
-       jH@HHWZuzZZz1?zI=?<;;;zUZwW@MMMMMHHHM@MH9{       `   ppp`   `          .ppR   (pph        .ppP   zpp[               dpp}       .ppR
-     `.X@MmqpWktXZ???w0?>>;>>+zOdWMHHMMMNHMH@MR-          ` ppp`     `   `    .ppR    4ppn.     .JppP   .Wpp+         .,   dpp}       .ppR
-     `(W@@gHHWXwWOl==???zy>>>?zXwMNmwWH@MMMHMHkH+    `      pppAAAAAAAAAAAA-  .pfR     TppppbbppW4ppP     4pppn(....dpp$   dpp}       .pfR
-      (WHgggmHSwW0tz<>>?1I=1z=zZuXMMHXUHHqkqHHHY!       `   TTTTTTTTTTTTTTT:  .TTY       ?7```7` .pfP       ?TUWpppWY`=`   ?TT:       .TT3
-     `(dHHmmHWurWkOz<>?===lwpwwWkWHMMNkdHHHHMMR-                                                 (pp
-       (XW@gHWWXXHWwzzOOOOwwuXWHbHH@MNNmdY3?UWk{   `                                   A-...  ..dpp%
-        (WHmkHkHWHHWWWkWWWWyXWWHH@MHH@MMS_ -XHD`      `           `                    WppppppppWY!
-         ~?zXH@@M@HHHgmkkHHHHHHHHMMMMMMD! .HHN,         `    `                             ```
-           ?7CVU0YTUU9UWHHHHMHHHWUXYT!`    ?WHHH>  `
-                       `_?<!`` _!             ?!`          `    `  `")
 	if(APPLE)
 		find_package(Eigen3	REQUIRED COMPONENTS Dense Core Geometry)
 
@@ -406,31 +290,6 @@ if(USE_EIGEN3)
 endif(USE_EIGEN3)
 
 if(USE_ICE)
-	message("
-	            ..(zzzzzzzzzzw&(..
-              .(wzzzzzzzzzzzzzzzzvvvzw+.
-           ..wzzzzzzzzzzzzzzzzzw77!`   `~`
-         .JzzzzzzzzzzzzzvzzvzZ^    ....
-        (zzvvzzzzzzzzzzzzzzzZ`   (zzvvvzn.  ..
-      .wzzzzzzzzzzzzzzzzzzzz!   Jzzzvvzzzzzzzzn.  `
-     .vvzzzzzzzzzzzzzzzzvzzZ   .zzzzzzzzzzzzzzzw.    `  ..............                                                       ...(((...
-    .zzzzzzzvzzzzzzzzzzzzzvw   .zvzzzzzzzzzzzzzzw.      MMMMMMMMMMMMMM                                                    .+MMMMMMMMMMM^
-    Jvzzzzzzzzzzzzzzzzzzzvvv-   jzzzvzzzz7?77Ozzzl               .MMM'                                                   dMM#^        `
-   .zvzzvzzzzzzzzzzzzzzzzzvvw.   ?OzzzzZ!   .zzzzz_             .MM@        .JMMMNg..     .gp ..gMM#    ..gMMMNJ.       dMM=
-   Jvvzzzzzvzzvzzzzzzzzzzzzvvw.            .wzzzzz)            (MM$       .MM#`777WMMe    .MM.MM`7`=  .MMM`777`MMN,    .MMF
-   wzzzzzzzzzzzzzzzzzzzzzzzzvvvzo........zzzzzzzzzI          .dMM^       .MM$      (MM[   .MMM'      .MMF       ?MM]   dMM~
-   wzzzzvzzzzzzzzzzzzzzzvzzzzzvzzzzzzzzvvvzzzzzzvzI         .MM#`        dMN........MMF   .MM        (MM`        MMN   dMM~
-   jzzzzzzzvzzvzzzzzzzzzzzzzzzzzzzzzzzzzzvzzzzzzzv}        .MMD          MMMMMMMMMMMMMD   .MM}       MMM         MMM   JMM]
-   .zvzzzzzzzzzzzzzzzzzzzzzvzzzzzzzzzzzzzzzzvzzzzz:      .JMM^           dMN.             .MM}       (MM,        MM#   .MMN,
-    zzvzzzzzzzzzzzzzzzzzvzzzzzzzzzzzzzzzzzzzzzzzzI      .MM#`            .MMN.            .MM}        MMN,     .(MM^    .MMMe.
-    .zzzzvzzvzzzzzzzzzzzzzzzzzzzzzzzzzzzvzzzzzzzw`   ` .MMMMMMMMMMMMMMF    TMMNa++gNMM_   .MM}         TMMNg++dMM#'       ?MMMMNNgNNMMF
-     .vvzzzzzzzzzzzzzzzzzzzvzzzzzzzvzzzzzzzvzzvw'      .``````````````^      _`T````!     .``!           .`````^             ?`T`````^
-      .OzvzzzzzzzzzzzzzzvzzzzzzzzzzzzzzzzzzzzzZ!
-        jzzzvzzzzzzzzzzzzzzzzzzzzzzzzzvzzzzzz7
-         .1zzzzzzzzzzzzzzzzvzzzzzzzvzzzzzvzC`      `
-           .?wzvzzzzzzzzvzzzzzzzzzzzzzzzw7`
-              _7wzvzzzzzzzzzzzzzzzzzzZ7!        `
-                  _?7CzzzzzzzzzvC77`                `")
 	find_package(Ice REQUIRED COMPONENTS Ice++11 IceBox++11 IceSSL++11 IceGrid++11 IceDiscovery++11)
 
 	if(Ice_FOUND)
